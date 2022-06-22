@@ -1,18 +1,12 @@
 mod camera;
-mod color;
 mod hit;
 mod material;
 mod ray;
 mod sphere;
 mod vec3;
-use std::{
-    io::{stderr, Write},
-    rc::Rc,
-    sync::Arc,
-};
+use std::sync::Arc;
 
 use crate::{
-    color::write_color,
     hit::World,
     material::{Dielectric, Lambertian, Metal},
     sphere::Sphere,

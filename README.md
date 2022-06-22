@@ -4,6 +4,12 @@ A simple multithreaded raytracer, implemented in rust.
 
 A fun covid project to help me learn rust.
 
+## Run
+
+```
+cargo run > image.ppm
+```
+
 ## Final result:
 
 ![](final.png?raw=true)
