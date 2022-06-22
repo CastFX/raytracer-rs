@@ -16,6 +16,6 @@ cargo run > image.ppm
 
 ## Credits
 
-Coded this following https://raytracing.github.io/books/RayTracingInOneWeekend
+https://raytracing.github.io/books/RayTracingInOneWeekend
 
-and https://misterdanb.github.io/raytracinginrust
+https://misterdanb.github.io/raytracinginrust
