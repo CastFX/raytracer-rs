@@ -2,7 +2,7 @@
 
 A simple multithreaded raytracer, implemented in rust.
 
-A fun covid project to help me learn rust.
+It's been a fun covid project to start learning rust.
 
 ## Run
 
