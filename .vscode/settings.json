@@ -1,4 +1,9 @@
 {
   "editor.formatOnSave": true,
-  "editor.tabSize": 4
+  "editor.tabSize": 4,
+  "cSpell.enabled": false,
+  "search.exclude": {
+    "**/target": true,
+    "src/main": true
+  }
 }

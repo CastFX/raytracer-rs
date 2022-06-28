@@ -1,3 +1,5 @@
+use rand::Rng;
+
 use crate::{
     ray::Ray,
     vec3::{Point3, Vec3},
@@ -11,6 +13,8 @@ pub struct Camera {
     cu: Vec3,
     cv: Vec3,
     lens_radius: f64,
+    time0: f64,
+    time1: f64,
 }
 
 impl Camera {
@@ -22,6 +26,8 @@ impl Camera {
         aspect_ratio: f64,
         aperture: f64,
         focus_dist: f64,
+        time0: f64,
+        time1: f64,
     ) -> Self {
         //vertical fov in degrees
         let theta = std::f64::consts::PI / 180.0 * vfov;
@@ -34,7 +40,8 @@ impl Camera {
 
         let horizontal = focus_dist * viewport_width * cu;
         let vertical = focus_dist * viewport_height * cv;
-        let lower_left_corner = lookfrom - horizontal / 2.0 - vertical / 2.0 - focus_dist * cw;
+        let lower_left_corner =
+            lookfrom - horizontal / 2.0 - vertical / 2.0 - focus_dist * cw;
 
         Self {
             origin: lookfrom,
@@ -44,16 +51,25 @@ impl Camera {
             cu,
             cv,
             lens_radius: aperture / 2.0,
+            time0,
+            time1,
         }
     }
 
     pub fn get_ray(&self, s: f64, t: f64) -> Ray {
-        let rd = self.lens_radius * Vec3::random_in_unit_disk();
-        let offset = self.cu * rd.x() + self.cv * rd.y();
+        let lens = self.lens_radius * Vec3::random_in_unit_disk();
+        let blur = self.cu * lens.x() + self.cv * lens.y();
+
+        let mut rng = rand::thread_rng();
+
+        let origin = self.origin + blur;
+        let target =
+            self.lower_left_corner + s * self.horizontal + t * self.vertical;
 
         Ray::new(
-            self.origin + offset,
-            self.lower_left_corner + s * self.horizontal + t * self.vertical - self.origin - offset,
+            self.origin + blur,
+            target - origin,
+            rng.gen_range(self.time0..=self.time1),
         )
     }
 }

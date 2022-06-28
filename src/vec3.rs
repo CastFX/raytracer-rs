@@ -72,6 +72,14 @@ impl Vec3 {
         }
     }
 
+    pub fn distance_to(self, other: Vec3) -> f64 {
+        ((other.x() - self.x()).powi(2)
+            + (other.y() - self.y()).powi(2)
+            + (other.z() - self.z()).powi(2))
+        .sqrt()
+        .abs()
+    }
+
     pub fn format_color(self, samples_per_pixel: u64) -> String {
         let ir = (256.0
             * (self[0] / (samples_per_pixel as f64))
@@ -123,7 +131,11 @@ impl Vec3 {
         let mut rng = rand::thread_rng();
 
         loop {
-            let p = Vec3::new(rng.gen_range(-1.0..1.0), rng.gen_range(-1.0..1.0), 0.0);
+            let p = Vec3::new(
+                rng.gen_range(-1.0..1.0),
+                rng.gen_range(-1.0..1.0),
+                0.0,
+            );
 
             if p.length() < 1.0 {
                 return p;
@@ -252,6 +264,16 @@ impl ops::Div<f64> for Vec3 {
 
     fn div(self, rhs: f64) -> Self::Output {
         (1.0 / rhs) * self
+    }
+}
+
+impl ops::Div<Vec3> for f64 {
+    type Output = Vec3;
+
+    fn div(self, rhs: Vec3) -> Self::Output {
+        Vec3 {
+            e: [self / rhs[0], self / rhs[1], self / rhs[2]],
+        }
     }
 }
 

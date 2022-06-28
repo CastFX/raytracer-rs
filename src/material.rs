@@ -1,8 +1,11 @@
+use std::sync::Arc;
+
 use rand::Rng;
 
 use crate::{
     hit::HitRecord,
     ray::Ray,
+    texture::{SolidColor, Texture},
     vec3::{Color, Vec3},
 };
 
@@ -11,25 +14,34 @@ pub trait Scatter: Send + Sync {
 }
 
 pub struct Lambertian {
-    albedo: Color,
+    albedo: Arc<dyn Texture>,
 }
 
 impl Lambertian {
-    pub fn new(albedo: Color) -> Self {
+    pub fn new(albedo: Arc<dyn Texture>) -> Self {
         Self { albedo }
+    }
+
+    pub fn from_solid_color(color: &Color) -> Self {
+        Self {
+            albedo: Arc::new(SolidColor::new(*color)),
+        }
     }
 }
 
 impl Scatter for Lambertian {
-    fn scatter(&self, _ray_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
-        let mut scatter_direction = rec.normal + Vec3::random_in_unit_sphere().normalized();
+    fn scatter(&self, ray_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
+        let mut scatter_direction =
+            rec.normal + Vec3::random_in_unit_sphere().normalized();
 
         if scatter_direction.near_zero() {
             scatter_direction = rec.normal;
         }
 
-        let scattered = Ray::new(rec.p, scatter_direction);
-        Some((self.albedo, scattered))
+        let scattered = Ray::new(rec.p, scatter_direction, ray_in.time());
+
+        let attenuation = self.albedo.value(rec.u, rec.v, &rec.p);
+        Some((attenuation, scattered))
     }
 }
 
@@ -47,7 +59,11 @@ impl Metal {
 impl Scatter for Metal {
     fn scatter(&self, ray_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
         let reflected = ray_in.direction().reflect(rec.normal).normalized();
-        let scattered = Ray::new(rec.p, reflected + self.fuzz * Vec3::random_in_unit_sphere());
+        let scattered = Ray::new(
+            rec.p,
+            reflected + self.fuzz * Vec3::random_in_unit_sphere(),
+            ray_in.time(),
+        );
 
         if scattered.direction().dot(rec.normal) > 0.0 {
             Some((self.albedo, scattered))
@@ -87,7 +103,8 @@ impl Scatter for Dielectric {
 
         let mut rng = rand::thread_rng();
         let cannot_reflect = refraction_ratio * sin_theta > 1.0;
-        let will_reflect = rng.gen::<f64>() < Self::reflectance(cos_theta, refraction_ratio);
+        let will_reflect =
+            rng.gen::<f64>() < Self::reflectance(cos_theta, refraction_ratio);
 
         let direction = if cannot_reflect || will_reflect {
             unit_direction.reflect(rec.normal)
@@ -95,7 +112,7 @@ impl Scatter for Dielectric {
             unit_direction.refract(rec.normal, refraction_ratio)
         };
 
-        let scattered = Ray::new(rec.p, direction);
+        let scattered = Ray::new(rec.p, direction, ray_in.time());
 
         Some((Color::ONE, scattered))
     }
