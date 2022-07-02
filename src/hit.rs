@@ -55,21 +55,22 @@ impl Hittable for World {
     }
 
     fn bounding_box(&self, time0: f64, time1: f64) -> Option<AABB> {
-        let (_, bounding_box) =
-            self.iter()
-                .fold((true, None::<AABB>), |(first_box, output_box), hittable| {
-                    if !first_box && output_box.is_none() {
-                        (false, None)
-                    } else {
-                        match (hittable.bounding_box(time0, time1), output_box) {
-                            (Some(temp_box), None) => (false, Some(temp_box)),
-                            (Some(temp_box), Some(output_box)) => {
-                                (false, Some(output_box.surrounding_box(&temp_box)))
-                            }
-                            (None, _) => (false, None),
+        let (_, bounding_box) = self.iter().fold(
+            (true, None::<AABB>),
+            |(first_box, output_box), hittable| {
+                if !first_box && output_box.is_none() {
+                    (false, None)
+                } else {
+                    match (hittable.bounding_box(time0, time1), output_box) {
+                        (Some(temp_box), None) => (false, Some(temp_box)),
+                        (Some(temp_box), Some(output_box)) => {
+                            (false, Some(output_box.surrounding_box(&temp_box)))
                         }
+                        (None, _) => (false, None),
                     }
-                });
+                }
+            },
+        );
 
         bounding_box
     }

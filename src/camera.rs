@@ -2,6 +2,7 @@ use rand::Rng;
 
 use crate::{
     ray::Ray,
+    scenes::Scene,
     vec3::{Point3, Vec3},
 };
 
@@ -18,39 +19,31 @@ pub struct Camera {
 }
 
 impl Camera {
-    pub fn new(
-        lookfrom: Point3,
-        lookat: Point3,
-        vup: Vec3,
-        vfov: f64,
-        aspect_ratio: f64,
-        aperture: f64,
-        focus_dist: f64,
-        time0: f64,
-        time1: f64,
-    ) -> Self {
+    pub fn new(scene: &Scene, time0: f64, time1: f64) -> Self {
         //vertical fov in degrees
-        let theta = std::f64::consts::PI / 180.0 * vfov;
+        let theta = std::f64::consts::PI / 180.0 * scene.vfov;
         let viewport_height = 2.0 * (theta / 2.0).tan();
-        let viewport_width = viewport_height * aspect_ratio;
+        let viewport_width = viewport_height * scene.aspect_ratio;
 
-        let cw = (lookfrom - lookat).normalized();
-        let cu = vup.cross(cw).normalized();
+        let cw = (scene.lookfrom - scene.lookat).normalized();
+        let cu = scene.vup.cross(cw).normalized();
         let cv = cw.cross(cu);
 
-        let horizontal = focus_dist * viewport_width * cu;
-        let vertical = focus_dist * viewport_height * cv;
-        let lower_left_corner =
-            lookfrom - horizontal / 2.0 - vertical / 2.0 - focus_dist * cw;
+        let horizontal = scene.dist_to_focus * viewport_width * cu;
+        let vertical = scene.dist_to_focus * viewport_height * cv;
+        let lower_left_corner = scene.lookfrom
+            - horizontal / 2.0
+            - vertical / 2.0
+            - scene.dist_to_focus * cw;
 
         Self {
-            origin: lookfrom,
+            origin: scene.lookfrom,
             lower_left_corner,
             horizontal,
             vertical,
             cu,
             cv,
-            lens_radius: aperture / 2.0,
+            lens_radius: scene.aperture / 2.0,
             time0,
             time1,
         }

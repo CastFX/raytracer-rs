@@ -6,11 +6,15 @@ use crate::{
     hit::HitRecord,
     ray::Ray,
     texture::{SolidColor, Texture},
-    vec3::{Color, Vec3},
+    vec3::{Color, Point3, Vec3},
 };
 
 pub trait Scatter: Send + Sync {
     fn scatter(&self, ray_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)>;
+
+    fn color_emitted(&self, _u: f64, _v: f64, _p: &Point3) -> Color {
+        Color::ZERO
+    }
 }
 
 pub struct Lambertian {
@@ -115,5 +119,35 @@ impl Scatter for Dielectric {
         let scattered = Ray::new(rec.p, direction, ray_in.time());
 
         Some((Color::ONE, scattered))
+    }
+}
+
+pub struct DiffuseLight {
+    emit: Arc<dyn Texture>,
+}
+
+impl DiffuseLight {
+    pub fn new(emit: Arc<dyn Texture>) -> Self {
+        DiffuseLight { emit }
+    }
+
+    pub fn from_color(color: Color) -> Self {
+        DiffuseLight {
+            emit: Arc::new(SolidColor::new(color)),
+        }
+    }
+}
+
+impl Scatter for DiffuseLight {
+    fn scatter(
+        &self,
+        _ray_in: &Ray,
+        _recc: &HitRecord,
+    ) -> Option<(Color, Ray)> {
+        None
+    }
+
+    fn color_emitted(&self, u: f64, v: f64, p: &Point3) -> Color {
+        self.emit.value(u, v, p)
     }
 }
