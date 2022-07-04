@@ -3,12 +3,12 @@ use std::sync::Arc;
 use crate::{
     aabb::AABB,
     hit::{HitRecord, Hittable},
-    material::Scatter,
+    material::Material,
     vec3::{Point3, Vec3},
 };
 
 pub struct XYRect {
-    material: Arc<dyn Scatter>,
+    material: Arc<dyn Material>,
     x0: f64,
     x1: f64,
     y0: f64,
@@ -23,7 +23,7 @@ impl XYRect {
         y0: f64,
         y1: f64,
         k: f64,
-        material: Arc<dyn Scatter>,
+        material: Arc<dyn Material>,
     ) -> Self {
         XYRect {
             material,
@@ -81,7 +81,7 @@ impl Hittable for XYRect {
 }
 
 pub struct XZRect {
-    material: Arc<dyn Scatter>,
+    material: Arc<dyn Material>,
     x0: f64,
     x1: f64,
     z0: f64,
@@ -96,7 +96,7 @@ impl XZRect {
         z0: f64,
         z1: f64,
         k: f64,
-        material: Arc<dyn Scatter>,
+        material: Arc<dyn Material>,
     ) -> Self {
         XZRect {
             material,
@@ -154,7 +154,7 @@ impl Hittable for XZRect {
 }
 
 pub struct YZRect {
-    material: Arc<dyn Scatter>,
+    material: Arc<dyn Material>,
     y0: f64,
     y1: f64,
     z0: f64,
@@ -169,7 +169,7 @@ impl YZRect {
         z0: f64,
         z1: f64,
         k: f64,
-        material: Arc<dyn Scatter>,
+        material: Arc<dyn Material>,
     ) -> Self {
         YZRect {
             material,

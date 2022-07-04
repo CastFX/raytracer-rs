@@ -1,17 +1,17 @@
 use std::sync::Arc;
 
-use crate::{material::Scatter, vec3::Point3};
+use crate::{material::Material, vec3::Point3};
 
 pub struct Cube {
     pub min: Point3,
     pub max: Point3,
     pub center: Point3,
     pub size: f64,
-    pub material: Arc<dyn Scatter>,
+    pub material: Arc<dyn Material>,
 }
 
 impl Cube {
-    pub fn new(min: Point3, max: Point3, material: Arc<dyn Scatter>) -> Cube {
+    pub fn new(min: Point3, max: Point3, material: Arc<dyn Material>) -> Cube {
         Cube {
             min,
             max,

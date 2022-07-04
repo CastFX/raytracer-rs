@@ -3,7 +3,7 @@ use std::sync::Arc;
 use crate::{
     aabb::AABB,
     hit::{HitRecord, Hittable},
-    material::Scatter,
+    material::Material,
     sphere::Sphere,
     vec3::{Point3, Vec3},
 };
@@ -16,7 +16,7 @@ pub struct MovingSphere {
     pub time0: f64,
     pub time1: f64,
     pub radius: f64,
-    pub material: Arc<dyn Scatter>,
+    pub material: Arc<dyn Material>,
 }
 
 impl MovingSphere {
@@ -26,7 +26,7 @@ impl MovingSphere {
         time0: f64,
         time1: f64,
         radius: f64,
-        material: Arc<dyn Scatter>,
+        material: Arc<dyn Material>,
     ) -> MovingSphere {
         MovingSphere {
             center0,
@@ -40,12 +40,18 @@ impl MovingSphere {
 
     pub fn center(&self, time: f64) -> Point3 {
         self.center0
-            + ((time - self.time0) / (self.time1 - self.time0)) * (self.center1 - self.center0)
+            + ((time - self.time0) / (self.time1 - self.time0))
+                * (self.center1 - self.center0)
     }
 }
 
 impl Hittable for MovingSphere {
-    fn hit(&self, ray: &crate::ray::Ray, t_min: f64, t_max: f64) -> Option<HitRecord> {
+    fn hit(
+        &self,
+        ray: &crate::ray::Ray,
+        t_min: f64,
+        t_max: f64,
+    ) -> Option<HitRecord> {
         let oc = ray.origin() - self.center(ray.time());
         let a = ray.direction().length_squared();
         let half_b = ray.direction().dot(oc);

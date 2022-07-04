@@ -9,7 +9,7 @@ use crate::{
     vec3::{Color, Point3, Vec3},
 };
 
-pub trait Scatter: Send + Sync {
+pub trait Material: Send + Sync {
     fn scatter(&self, ray_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)>;
 
     fn color_emitted(&self, _u: f64, _v: f64, _p: &Point3) -> Color {
@@ -26,14 +26,14 @@ impl Lambertian {
         Self { albedo }
     }
 
-    pub fn from_solid_color(color: &Color) -> Self {
+    pub fn from_solid_color(color: Color) -> Self {
         Self {
-            albedo: Arc::new(SolidColor::new(*color)),
+            albedo: Arc::new(SolidColor::new(color)),
         }
     }
 }
 
-impl Scatter for Lambertian {
+impl Material for Lambertian {
     fn scatter(&self, ray_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
         let mut scatter_direction =
             rec.normal + Vec3::random_in_unit_sphere().normalized();
@@ -60,7 +60,7 @@ impl Metal {
     }
 }
 
-impl Scatter for Metal {
+impl Material for Metal {
     fn scatter(&self, ray_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
         let reflected = ray_in.direction().reflect(rec.normal).normalized();
         let scattered = Ray::new(
@@ -94,7 +94,7 @@ impl Dielectric {
     }
 }
 
-impl Scatter for Dielectric {
+impl Material for Dielectric {
     fn scatter(&self, ray_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
         let refraction_ratio = if rec.front_face {
             1.0 / self.index_of_refraction
@@ -138,7 +138,7 @@ impl DiffuseLight {
     }
 }
 
-impl Scatter for DiffuseLight {
+impl Material for DiffuseLight {
     fn scatter(
         &self,
         _ray_in: &Ray,
@@ -149,5 +149,31 @@ impl Scatter for DiffuseLight {
 
     fn color_emitted(&self, u: f64, v: f64, p: &Point3) -> Color {
         self.emit.value(u, v, p)
+    }
+}
+
+pub struct Isotropic {
+    albedo: Arc<dyn Texture>,
+}
+
+impl Isotropic {
+    pub fn new(albedo: Arc<dyn Texture>) -> Self {
+        Self { albedo }
+    }
+
+    pub fn from_color(color: Color) -> Self {
+        Self {
+            albedo: Arc::new(SolidColor::new(color)),
+        }
+    }
+}
+
+impl Material for Isotropic {
+    fn scatter(&self, ray_in: &Ray, rec: &HitRecord) -> Option<(Color, Ray)> {
+        let scattered =
+            Ray::new(rec.p, Vec3::random_in_unit_sphere(), ray_in.time());
+
+        let attenuation = self.albedo.value(rec.u, rec.v, &rec.p);
+        Some((attenuation, scattered))
     }
 }

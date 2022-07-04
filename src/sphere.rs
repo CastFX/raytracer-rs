@@ -3,7 +3,7 @@ use std::{f64::consts::PI, sync::Arc};
 use crate::{
     aabb::AABB,
     hit::{HitRecord, Hittable},
-    material::Scatter,
+    material::Material,
     vec3::{Point3, Vec3},
 };
 
@@ -11,14 +11,14 @@ use crate::{
 pub struct Sphere {
     pub center: Point3,
     pub radius: f64,
-    pub material: Arc<dyn Scatter>,
+    pub material: Arc<dyn Material>,
 }
 
 impl Sphere {
     pub fn new(
         center: Point3,
         radius: f64,
-        material: Arc<dyn Scatter>,
+        material: Arc<dyn Material>,
     ) -> Sphere {
         Sphere {
             center,
